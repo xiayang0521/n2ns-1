@@ -1,23 +1,25 @@
-# 1.硬件配置
+
+# 〇、基础介绍
+## 1.硬件配置
 恩兔N2-NS1采用海思hi3798mv200芯片，四核A53，主频1.6G，单将CPU性能，比RTD1296还强一些，内存采用ddr4 2166，1G，存储为mmc 8G。hi3798支持原生sata、usb3.0和pcie2.0.但其PHY是复用的，所以恩兔引出了sata，也就不支持usb3.0了，同时该soc支持内置2个千兆mac，一个百兆phy，n2用的是千兆mac连接外置千兆PHY。
-# 2.关于原厂系统
+## 2.关于原厂系统
 n2原厂系统经验证已经不可用，无法绑定，所以不刷机就不能用了，原厂采用的32位linux系统，所以性能也受到一定限制。
-# 3.关于已有的小钢炮
+## 3.关于已有的小钢炮
 壳大做了小钢炮固件，按说比较易用，之所以重新制作，一是小钢炮没有提供gpio操作，开机后U盘不供电（硬盘未测试），二是对于我这种有洁癖的希望做一个64位系统，自主安装软件。
-# 4.关于刷机包文件
-## n2ns1_debian.xml
+## 4.关于刷机包文件（以debian为例）
+### n2ns1_debian.xml
 分区表文件，共有6个分区
-## fastboot.bin 
+### fastboot.bin 
 uboot文件，由sdk编译而成，并替换了原厂的reg文件，reg文件是外设寄存器配置，主要是引脚复用等，同时该fastboot主体是32位，sdk设置为64位，但uboot只有32位，主要是通过在编译内核时附加atf，在引导阶段将cpu切换到64位模式。
-## Bootargs
+### Bootargs
 对用的uboot的env文件，就是引导时的命令和内核参数
-## stock_kernel
+### stock_kernel
 原厂内核文件，为原厂固件提取的32位内核
-## stock_squash
+### stock_squash
 原厂rootfs，并经过修改，因为原厂rootfs串口不正常，ttl看不到登录界面，原因是gettty使用了错误的串口号，已经修正，可以ttl登录，也可以直接telnet，root用户没有密码，作为恢复和装系统使用的临时系统。同时停止原厂云应用运行。
-## hi_kernel.bin
+### hi_kernel.bin
 内核文件，由SDK编译而成，是64位内核，集成了dtb，同时整个内核和dtb作为atf的载荷，在boom命令执行后，由atf切换到64位模式并引导内核执行。所有gpio和led、U盘和硬盘供电的引脚已经通过逆向得到并写入dtb，开机后U盘和硬盘自动供电，电源按钮可用，led可以通过sysfs操作，实现开关led和闪烁等功能。
-## stretch.tar.bz2 
+### stretch.tar.bz2 
 debian的rootfs，由debian9生成，为什么选择debian9，而不是10和11，因为sdk内核版本为4.4.35，如果换用10或11，libc版本较高，会封装没在4.4内核的系统调用，造成启动阶段systemd提示一些syscall未找到，我有点洁癖，见不得提示错误，经过验证debian10可以正常运行，会提示syscall271未找到，debian11提示就比较多了。同时该rootfs已经继承了内核编译生成的module和header，可以在线编译新的软件和模块。
 
 
@@ -46,7 +48,7 @@ N2的IP192.168.1.10，电脑IP为192.168.1.18，
 选择emmc烧录，点击浏览，选择分区表XML文件，并勾选除了rootfs之外的分区
 
 
-# 二、刷机rootfs准备
+# 二、刷机（debian/centos）rootfs准备
 ## 1.说明
 本刷机包没有直接刷入rootfs，因为太大，所以刷入一个原厂系统，直接解压debian系统。
 ## 2.保持主板断电
@@ -62,19 +64,19 @@ stretch.tar.bz2，CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz和bootargs
 ![1689474738714](https://github.com/xiayang0521/n2ns-1/assets/23094327/b87b9f54-21c3-4b59-b152-a6c740ec6f73)
 
 
-## 2.开启U盘供电
+## 6.开启U盘供电
 ````
 echo 33 > /sys/class/gpio/export
 echo out > /sys/class/gpio/gpio33/direction
 echo 1 > /sys/class/gpio/gpio33/value
 此时再用blkid就能看到U盘了
 ````
-##  3.挂载U盘和emmc
+##  7.挂载U盘和emmc
 ````
 mount /dev/sda1 /mnt/usb1
 ````
 
-# 三、刷rootfs
+# 三、可刷系统（有的未测）
 ##  1. Debian10系统
 
 改变启动参数，下次重启从debian启动
