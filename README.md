@@ -1,4 +1,21 @@
 
+# 简介
+恩兔NS-1是一款基于海思Hi3798MV200的云盘产品，原厂app目前已无法使用，这款盒子比较奇葩的是居然内置了SATA接口，可谓市场上独一无二了。据大佬说是砍了USB3.0而换来的SATA，所以折腾起来异常坎坷，再次特别感谢稍息大佬的辛苦付出。 具体硬件规格如下表：
+
+
+|   部件名称    |       芯片型号       |                           备注说明                           |
+| :-----------: | :------------------: | :----------------------------------------------------------: |
+|      CPU      | Hi3798 MRBCV2010D000 |     Cortex-A53，四核64位 1.6GHz ， ARM Mali-450 3D GPU      |
+|      RAM      |                      |                        1GB DDR3                    |
+|     Flash     |                      |                        4GB eMMC                      |
+|   Ethernet    |                      |                  RJ45 10/100/1000M Base-T                     |
+|    USB 2.0    |                      |                        USB 2.0  * 1                  |
+|     HDMI      |                      |  HDMI 2.0   |
+|     power     |  5V DC at 2A         | TypeC in |
+|    其他接口    |                      | SD卡接口,                      内置SATA接口+2.5寸硬盘位 |
+
+
+
 # 〇、基础介绍
 ## 1.硬件配置
 恩兔N2-NS1采用海思hi3798mv200芯片，四核A53，主频1.6G，单将CPU性能，比RTD1296还强一些，内存采用ddr4 2166，1G，存储为mmc 4G。hi3798支持原生sata、usb3.0和pcie2.0.但其PHY是复用的，所以恩兔引出了sata，也就不支持usb3.0了，同时该soc支持内置2个千兆mac，一个百兆phy，n2用的是千兆mac连接外置千兆PHY，仅硬盘版有WIFI模块。
@@ -122,25 +139,42 @@ password:         shaoxi
 
 ##  2. CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz
 安装CentOS到emmc
+
+将CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz和bootargs2文件放入U盘根目录，机器连接网线和U盘，开机telnet连接并挂载优盘后（参照二中1-7）,执行：
 ````
-将CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz和bootargs2文件放入U盘根目录，机器连接网线和U盘开机
 dd if=/mnt/usb1/bootargs2 of=/dev/mmcblk0p2
 mkfs.ext4 /dev/mmcblk0p6
 xzcat CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz | sudo dd of=/dev/mmcblk0p6 bs=4M conv=sync
-
 ````
 ````
 username:         root               n1
 password:         centos           phicomm
 ````
-##  3. N2_alpine3.17.img.7z
-未测试
-##  4. 小钢炮系统entu_xgp_emmc_image.7z（http://rom.nanodm.net/    https://nanodm.net/）
-未测试
-##  5. TTL-hi3798mv200-202304-64-n2ns1.zip 海纳思 hinas 固件(https://dl.ecoo.top/)
-按照官网教程即可
+
+##  3. 海纳思 hinas 固件(https://dl.ecoo.top/)
+
+使用HiNAS_EMMC_backup-202304-64-n2ns1.img.xz解压得到img文件，将img文件HiNAS_EMMC_backup-202304-64-n2ns1.img放入U盘根目录，机器连接网线和U盘，开机telnet连接并挂载优盘后（参照二中1-7）,执行：
+````
+dd if=/mnt/usb1/HiNAS_EMMC_backup-202304-64-n2ns1.img of=/dev/mmcblk0p2  bs=4M 
+拔电重启即可
+````
+
+也可使用TTL-hi3798mv200-202304-64-n2ns1.zip 按照官网教程即可
+
 ````
 username:         root         
 password:       ecoo1234
 ````
-##  6. Synology-n2ns1.zip群晖体验版 50分钟重启一次（无安装教程，作者雪狐）
+
+##  4. alpine3.17
+
+N2_alpine3.17.img.7z 未测试
+
+##  5. 小钢炮系统 
+
+entu_xgp_emmc_image.7z（http://rom.nanodm.net/    https://nanodm.net/） 未测试
+
+##  6. 群晖体验版
+
+50分钟重启一次（无安装教程，作者雪狐）
+Synology-n2ns1.zip
