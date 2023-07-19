@@ -94,7 +94,7 @@ mount /dev/sda1 /mnt/usb1
 ````
 
 # 三、可刷系统（有的未测）
-##  1. Debian10系统
+##  1. Debian系统
 
 改变启动参数，下次重启从debian启动
 dd if=/mnt/usb1/bootargs2 of=/dev/mmcblk0p2
