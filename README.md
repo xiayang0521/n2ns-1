@@ -155,7 +155,7 @@ password:         centos           phicomm
 
 使用HiNAS_EMMC_backup-202304-64-n2ns1.img.xz解压得到img文件，将img文件HiNAS_EMMC_backup-202304-64-n2ns1.img放入U盘根目录，机器连接网线和U盘，开机telnet连接并挂载优盘后（参照二中1-7）,执行：
 ````
-dd if=/mnt/usb1/HiNAS_EMMC_backup-202304-64-n2ns1.img of=/dev/mmcblk0p2  bs=4M 
+dd if=/mnt/usb1/HiNAS_EMMC_backup-202304-64-n2ns1.img of=/dev/mmcblk0  bs=4M 
 拔电重启即可
 ````
 
