@@ -40,7 +40,18 @@ uboot文件，由sdk编译而成，并替换了原厂的reg文件，reg文件是
 debian的rootfs，由debian9生成，为什么选择debian9，而不是10和11，因为sdk内核版本为4.4.35，如果换用10或11，libc版本较高，会封装没在4.4内核的系统调用，造成启动阶段systemd提示一些syscall未找到，我有点洁癖，见不得提示错误，经过验证debian10可以正常运行，会提示syscall271未找到，debian11提示就比较多了。同时该rootfs已经继承了内核编译生成的module和header，可以在线编译新的软件和模块。
 
 
-# 一、刷机准备
+# 一、刷原厂镜像
+
+本刷机包没有直接刷入rootfs，因为太大，所以刷入了修改版原厂系统，直接解压debian系统。
+
+如果机子已经是linux系统，可以dd恢复一个修改版原厂镜像，则只需要下载stock_image_backup.img.xz解压得到stock_image_backup.img并放入优盘，挂载后，cd到stock_image_backup.img所在路径，执行：
+````
+dd if=stock_image_backup.img of=/dev/mmcblk0
+````
+重启即可。
+
+如果机子为原版未刷机的 或者 系统损坏的机子， 则需要如下操作：
+
 1.硬件连接
 准备ttl转USB，TTL排线，TTL插针和网线，插针插上即可无需焊接
 
@@ -64,31 +75,30 @@ N2的IP192.168.1.10，电脑IP为192.168.1.18，
 3.烧录
 选择emmc烧录，点击浏览，选择分区表XML文件，并勾选除了rootfs之外的分区
 
-
-# 二、刷机（debian/centos）rootfs准备
-## 1.说明
-本刷机包没有直接刷入rootfs，因为太大，所以刷入一个原厂系统，直接解压debian系统。
-## 2.保持主板断电
+4.保持主板断电
 点击烧写，根据下侧窗口提示上电
 
-## 3.等待烧写完毕
-即可断电，时间因该2分钟左右，因为，只有原厂系统
-## 4.将以下文件
-stretch.tar.bz2，CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz和bootargs2 文件放入U盘根目录，机器连接网线和U盘开机
-## 5.在路由器找到设备ip
+5.等待烧写完毕
+即可断电，时间因该2分钟左右，因为只有原厂系统
+
+
+# 二、刷机（debian/centos）rootfs准备
+
+## 1.将以下文件
+stretch.tar.bz2，CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img和bootargs2 文件放入U盘根目录，机器连接网线和U盘开机
+## 2.在路由器找到设备ip
 用telnet连接用户名root（注意不是ssh），密码为空
 
 ![1689474738714](https://github.com/xiayang0521/n2ns-1/assets/23094327/b87b9f54-21c3-4b59-b152-a6c740ec6f73)
 
-
-## 6.开启U盘供电
+## 3.开启U盘供电
 ````
 echo 33 > /sys/class/gpio/export
 echo out > /sys/class/gpio/gpio33/direction
 echo 1 > /sys/class/gpio/gpio33/value
 此时再用blkid就能看到U盘了
 ````
-##  7.挂载U盘和emmc
+##  4.挂载U盘和emmc
 ````
 mount /dev/sda1 /mnt/usb1
 ````
@@ -97,21 +107,24 @@ mount /dev/sda1 /mnt/usb1
 ##  1. Debian系统
 
 改变启动参数，下次重启从debian启动
-dd if=/mnt/usb1/bootargs2 of=/dev/mmcblk0p2
-
+````
+cd /mnt/usb1/
+dd if=bootargs2 of=/dev/mmcblk0p2
+````
 安装debian到emmc
 ````
 mkfs.ext4 /dev/mmcblk0p6
 mkdir /tmp/mmc
 mount /dev/mmcblk0p6 /tmp/mmc
-tar xvjpf /mnt/usb1/stretch.tar.bz2 -C /tmp/mmc
+cd /mnt/usb1/
+tar xvjpf stretch.tar.bz2 -C /tmp/mmc
 
 重启
 reboot
 ````
 使用
 ````
-ssh连接，重启后即可通过ssh连接，用户名root，密码shaoxi
+debian开机无hdmi输出（笔者不会怎么调出hdmi，也许就是不行），ssh连接，重启后即可通过ssh连接，用户名root，密码shaoxi
 led操作
 可以看到8个gpio的led全部注册正常，
 打开
@@ -125,7 +138,7 @@ echo 0 > /sys/class/leds/green:fn/brightness
 已经安装了samba、aria、nginx、php的常用软件，直接搜索debian配置即可
 关于docker，没有内置docker，但是内核编译已经启用了docker支持，主要考虑没有硬盘的情况下，4G的空间不够docker用，可自行一键安装docker
 apt-get install curl
-curl -fsSL [https://get.docker.com](https://links.jianshu.com/go?to=https%3A%2F%2Fget.docker.com) | bash -s docker --mirror Aliyun
+curl -fsSL https://get.docker.com| bash -s docker --mirror Aliyun
 安装完成后，最好先停止docker，然后将docker的数据目录链接到硬盘某个目录下，例如
 安装硬盘后,通过parted分区后，挂载在/sata目录，然后把/var/lib/docker软链接至/sata/docker。
 修改bootargs参数，已经安装了uboot-tools，并配置了bootargs分区信息，可以直接通过fw_printenv打印启动参数，通过fw_setenv设置启动参数，如图通过设置bootcmd可以改变启动debian或者恢复系统
@@ -137,14 +150,17 @@ password:         shaoxi
 
 参见 https://www.wdmomo.fun:81/doc/index.html?file=003_%E5%90%84%E7%B1%BB%E7%9F%BF%E6%B8%A3/013_%E6%81%A9%E5%85%94NS-1
 
-##  2. CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz
-安装CentOS到emmc
+另有Milton大神做的纯净版Debian10
 
-将CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz和bootargs2文件放入U盘根目录，机器连接网线和U盘，开机telnet连接并挂载优盘后（参照二中1-7）,执行：
+TTL_Hi3798_N2_NS-1_Debian10_Aarch64.zip (内有说明)
+
+##  2. 安装CentOS到emmc
+CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz解压得到img文件，将CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img和bootargs2文件放入U盘根目录，机器连接网线和U盘，开机telnet连接并挂载优盘后（参照二中1-7）,执行：
 ````
 dd if=/mnt/usb1/bootargs2 of=/dev/mmcblk0p2
 mkfs.ext4 /dev/mmcblk0p6
-xzcat CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img.xz | sudo dd of=/dev/mmcblk0p6 bs=4M conv=sync
+cd /mnt/usb1/
+dd if=CentOS-7-aarch64-7.5.1804-k4.4.35-hi3798mv2x.img of=/dev/mmcblk0p6 bs=4M
 ````
 ````
 username:         root               n1
@@ -153,19 +169,27 @@ password:         centos           phicomm
 
 ##  3. 海纳思 hinas 固件(https://dl.ecoo.top/)
 
-使用HiNAS_EMMC_backup-202304-64-n2ns1.img.xz解压得到img文件，将img文件HiNAS_EMMC_backup-202304-64-n2ns1.img放入U盘根目录，机器连接网线和U盘，开机telnet连接并挂载优盘后（参照二中1-7）,执行：
+### 使用HiNAS_EMMC_backup-202304-64-n2ns1.img.xz解压得到img文件，将img文件HiNAS_EMMC_backup-202304-64-n2ns1.img放入U盘根目录，机器连接网线和U盘，开机telnet连接并挂载优盘后（参照二中1-7）,执行：
 ````
-dd if=/mnt/usb1/HiNAS_EMMC_backup-202304-64-n2ns1.img of=/dev/mmcblk0  bs=4M 
+cd /mnt/usb1/
+dd if=HiNAS_EMMC_backup-202304-64-n2ns1.img of=/dev/mmcblk0  bs=4M 
 拔电重启即可
 ````
 
-也可使用TTL-hi3798mv200-202304-64-n2ns1.zip 按照官网教程即可
+### 也可使用TTL-hi3798mv200-202304-64-n2ns1.zip 按照官网教程即可
 
 ````
 username:         root         
 password:       ecoo1234
 ````
 
+### openwrt系统（参见https://bbs.histb.com/d/936-hiopdi-yi-ban-chang-xian-ban）：
+````
+HiNAS系统下(20221001版)
+bash <(curl https://ecoo.top/hiop.sh)
+一键切换到hiop系统。
+在hiop的终端下，输入recovernas则一键切换回NAS系统。
+````
 ##  4. alpine3.17
 
 N2_alpine3.17.img.7z 未测试
@@ -178,3 +202,17 @@ entu_xgp_emmc_image.7z（http://rom.nanodm.net/    https://nanodm.net/） 未测
 
 50分钟重启一次（无安装教程，作者雪狐）
 Synology-n2ns1.zip
+
+
+
+# 四、高级玩法
+
+## Milton大佬带你玩转恩兔N2 NS-1
+https://www.cnblogs.com/milton/p/17608074.html
+
+## 从USB启动系统教程(可备份恢复)
+参见https://bbs.histb.com/d/259-usb
+
+## 切换overlay文件系统
+参见https://bbs.histb.com/d/257-overlay
+
