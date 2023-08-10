@@ -209,10 +209,23 @@ Synology-n2ns1.zip
 
 ## Milton大佬带你玩转恩兔N2 NS-1
 https://www.cnblogs.com/milton/p/17608074.html
+* [Tested]Kernel v4.4.y for Hi3798 serie https://github.com/JasonFreeLab/HiSTBLinuxV100R005C00SPC050
+  * https://github.com/tegzwn/HiSTBLinuxV100R005C00SPC050
+  * DTS file: https://github.com/JasonFreeLab/HiSTBLinuxV100R005C00SPC050/blob/master/source/kernel/linux-4.4.y/arch/arm64/boot/dts/hisilicon/hi3798mv200.dts
+* [Tested]Kernel v3.18.y for Hi3798 serie ttps://github.com/glinuz/hi3798mv100/tree/master/HiSTBLinuxV100R005C00SPC041B020
+* https://github.com/ricemices/hi3798m_debian
+  * https://github.com/yoyoliyang/hi3798m_debian
+  * Kernel v3.10 https://github.com/Spitzbube/hisilicon-kernel/tree/iconbit_hi3798mx
+* Kernel v4.4.35 for SoC Hi3798Cv200 / Hi3798Mv200 https://github.com/leandrotsampa/hisilicon-kernel
+4.4.y和3.18.y都可以编译
 
+  
 ## 从USB启动系统教程(可备份恢复)
 参见https://bbs.histb.com/d/259-usb
 
 ## 切换overlay文件系统
 参见https://bbs.histb.com/d/257-overlay
+
+
+
 
